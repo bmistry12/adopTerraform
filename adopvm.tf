@@ -1,29 +1,16 @@
-resource "aws_iam_role" "bhavIAMRole" {
-  name = "bhavIAMRole"
-  assume_role_policy = <<EOF
-{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Action": "sts:AssumeRole",
-      "Principal": {
-        "Service": "ec2.amazonaws.com"
-      },
-      "Effect": "Allow",
-      "Sid": ""
-    }
-  ]
-}
-EOF
+resource "aws_key_pair" "bhavTerraformKey" {
+  key_name   = "bhavTerraformKey"
+  public_key = "${var.public_key}"
 }
 
 data "template_file" "ADOPInit" {
   template = "${file("${path.module}/scripts/init.tpl")}"
-  
+
   vars {
     adop_username = "${var.adop_username}"
     adop_password = "${var.adop_password}"
-
+    s3_bucket_name = "${aws_s3_bucket.temp_adop_credentials.id}"
+    key_name = "${aws_key_pair.bhavTerraformKey.id}"
   }
 }
 
@@ -40,14 +27,16 @@ data "template_file" "ADOPInit" {
   }
 } */
 resource "aws_instance" "bhavAdopInstance" {
-  ami           = "ami-7abd0209"
+  ami           = "${var.ami_id}"
   instance_type = "m4.xlarge"
   key_name      = "bhav_terraform_example"
-  # network_interface {
-  #   network_interface_id = "${aws_network_interface.bhavAdopNetworkInterface.id}"
-  #   device_index = 0
-  # }
+ /*  network_interface {
+    network_interface_id = "${aws_network_interface.bhavAdopNetworkInterface.id}"
+    device_index = 0
+  } */
   vpc_security_group_ids = ["${aws_security_group.bhavAdopSecurityGroup.id}"]
+  subnet_id = "${aws_subnet.bhavAdopSubnet.id}"
+  iam_instance_profile = "${aws_iam_instance_profile.S3UploadRoleProfile.id}" 
 
   root_block_device {
     volume_type = "gp2"
@@ -85,11 +74,12 @@ resource "aws_instance" "bhavAdopInstance" {
 
   #user_data = "curl -L https://gist.github.com/bmistry12/6a4296de580f69158f864546ee6ecb6d"
   user_data = "${data.template_file.ADOPInit.rendered}" 
-  
+
   tags {
     Name = "bhavAdopInstance"
     Service = "ADOP-C"
     NetworkTier = "private"
     ServiceComponent = "ApplicationServer"
   }
+  # depends_on = ["aws_route.route"]
 }
