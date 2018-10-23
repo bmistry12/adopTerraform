@@ -3,7 +3,7 @@
 sleep 30
 
 ## Getting the UserData Script from Git
-curl -L https://gist.githubusercontent.com/bmistry12/6a4296de580f69158f864546ee6ecb6d/raw/ADOPC-User-Data.sh > ~/userData.sh
+curl -L https://gist.githubusercontent.com/bmistry12/6a4296de580f69158f864546ee6ecb6d/raw/ADOPC-User-Data-AWS.sh > ~/userData.sh
 chmod +x ~/userData.sh
 
 ## Set Variables

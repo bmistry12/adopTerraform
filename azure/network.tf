@@ -1,3 +1,11 @@
+
+resource "azurerm_public_ip" "adopEIP" {
+  name                         = "adopEIP"
+  location                     = "West Europe"
+  resource_group_name          = "${azurerm_resource_group.adopResourceGroup.name}"
+  public_ip_address_allocation = "static"
+}
+
 resource "azurerm_virtual_network" "adopVirtualNetwork" {
   name                = "adopVirtualNetwork"
   address_space       = ["172.31.0.0/16"]
@@ -86,11 +94,4 @@ resource "azurerm_network_security_rule" "allowDockerUDP" {
   destination_address_prefix  = "*"
   resource_group_name         = "${azurerm_resource_group.adopResourceGroup.name}"
   network_security_group_name = "${azurerm_network_security_group.adopSecurityGroup.name}"
-}
-
-resource "azurerm_public_ip" "adopEIP" {
-  name                         = "adopEIP"
-  location                     = "West Europe"
-  resource_group_name          = "${azurerm_resource_group.adopResourceGroup.name}"
-  public_ip_address_allocation = "static"
 }

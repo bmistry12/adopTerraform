@@ -2,6 +2,7 @@ resource "azurerm_network_interface" "adopNetworkInterface" {
   name                = "adopNetworkInterface"
   location            = "${azurerm_resource_group.adopResourceGroup.location}"
   resource_group_name = "${azurerm_resource_group.adopResourceGroup.name}"
+  network_security_group_id = "${azurerm_network_security_group.adopSecurityGroup.id}"
 
   ip_configuration {
     name                          = "adopIPConfig"
@@ -36,7 +37,7 @@ resource "azurerm_virtual_machine" "adopVirtualMachine" {
     name            = "adopOSDisk1"
     caching         = "ReadWrite"
     create_option   = "FromImage"
-    managed_disk_id = "Standard_LRS"
+    # managed_disk_id = "Standard_LRS"
     disk_size_gb    = 50
   }
 
@@ -138,7 +139,7 @@ resource "azurerm_virtual_machine_extension" "adopUserData" {
 
   settings = <<SETTINGS
     {
-      "commandToExecute": "sleep 30 && curl -L https://gist.githubusercontent.com/bmistry12/6a4296de580f69158f864546ee6ecb6d/raw/ADOPC-User-Data.sh > ~/userData.sh && chmod +x ~/userData.sh && export INITIAL_ADMIN_USER=${var.adop_username} && export INITIAL_ADMIN_PASSWORD_PLAIN=${var.adop_password} && cd ~/ && ./userData.sh"
+      "commandToExecute": "sleep 30 && curl -L https://gist.githubusercontent.com/bmistry12/f9541e6000af08ab31b4c945131ca2dc/raw/ADOPC-User-Data-AZ.sh > ~/userData.sh && chmod +x ~/userData.sh && export INITIAL_ADMIN_USER=${var.adop_username} && export INITIAL_ADMIN_PASSWORD_PLAIN=${var.adop_password} && cd ~/ && ./userData.sh"
     }
 SETTINGS
 }
