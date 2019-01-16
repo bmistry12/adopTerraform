@@ -1,16 +1,18 @@
 resource "azurerm_network_interface" "adopNetworkInterface" {
-  name                = "adopNetworkInterface"
-  location            = "${azurerm_resource_group.adopResourceGroup.location}"
-  resource_group_name = "${azurerm_resource_group.adopResourceGroup.name}"
+  name                      = "adopNetworkInterface"
+  location                  = "${azurerm_resource_group.adopResourceGroup.location}"
+  resource_group_name       = "${azurerm_resource_group.adopResourceGroup.name}"
   network_security_group_id = "${azurerm_network_security_group.adopSecurityGroup.id}"
 
   ip_configuration {
     name                          = "adopIPConfig"
     subnet_id                     = "${azurerm_subnet.adopSubnet.id}"
     private_ip_address_allocation = "static"
-    private_ip_address            = "172.31.64.10" //in the cidr range but not subnet
+    private_ip_address            = "172.31.64.10"                    //in the cidr range but not subnet
     public_ip_address_id          = "${azurerm_public_ip.adopEIP.id}"
   }
+
+  depends_on = ["azurerm_resource_group.adopResourceGroup", "azurerm_network_security_group.adopSecurityGroup", "azurerm_subnet.adopSubnet", "azurerm_public_ip.adopEIP"]
 }
 
 resource "azurerm_virtual_machine" "adopVirtualMachine" {
@@ -34,11 +36,12 @@ resource "azurerm_virtual_machine" "adopVirtualMachine" {
   }
 
   storage_os_disk {
-    name            = "adopOSDisk1"
-    caching         = "ReadWrite"
-    create_option   = "FromImage"
+    name          = "adopOSDisk"
+    caching       = "ReadWrite"
+    create_option = "FromImage"
+
     # managed_disk_id = "Standard_LRS"
-    disk_size_gb    = 50
+    disk_size_gb = 50
   }
 
   os_profile {
@@ -57,11 +60,13 @@ resource "azurerm_virtual_machine" "adopVirtualMachine" {
 
   tags {
     environment      = "staging"
-    Name             = "bhavAdopInstance"
+    Name             = "AdopCInstance"
     Service          = "ADOP-C"
     NetworkTier      = "private"
     ServiceComponent = "ApplicationServer"
   }
+
+  depends_on = ["azurerm_resource_group.adopResourceGroup", "${azurerm_network_interface.adopNetworkInterface}"]
 }
 
 /* resource "azurerm_managed_disk" "sda1" {
@@ -139,7 +144,9 @@ resource "azurerm_virtual_machine_extension" "adopUserData" {
 
   settings = <<SETTINGS
     {
-      "commandToExecute": "sleep 30 && curl -L https://gist.githubusercontent.com/bmistry12/f9541e6000af08ab31b4c945131ca2dc/raw/ADOPC-User-Data-AZ.sh > ~/userData.sh && chmod +x ~/userData.sh && export INITIAL_ADMIN_USER=${var.adop_username} && export INITIAL_ADMIN_PASSWORD_PLAIN=${var.adop_password} && cd ~/ && ./userData.sh"
+      "commandToExecute": "sleep 30 && curl -L https://gist.githubusercontent.com/bmistry12/f9541e6000af08ab31b4c945131ca2dc/raw/ADOPC-User-Data-AZ.sh > /root/userData.sh && chmod +x /root/userData.sh && export INITIAL_ADMIN_USER=${var.adop_username} && export INITIAL_ADMIN_PASSWORD_PLAIN=${var.adop_password} && cd /root && ./userData.sh 2>&1 | tee /root/userData.log"
     }
 SETTINGS
+
+  depends_on = ["azurerm_virtual_machine.adopVirtualMachine"]
 }

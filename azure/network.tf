@@ -1,9 +1,9 @@
-
 resource "azurerm_public_ip" "adopEIP" {
   name                         = "adopEIP"
   location                     = "West Europe"
   resource_group_name          = "${azurerm_resource_group.adopResourceGroup.name}"
   public_ip_address_allocation = "static"
+  depends_on                   = ["azurerm_resource_group.adopResourceGroup"]
 }
 
 resource "azurerm_virtual_network" "adopVirtualNetwork" {
@@ -11,6 +11,7 @@ resource "azurerm_virtual_network" "adopVirtualNetwork" {
   address_space       = ["172.31.0.0/16"]
   location            = "${azurerm_resource_group.adopResourceGroup.location}"
   resource_group_name = "${azurerm_resource_group.adopResourceGroup.name}"
+  depends_on          = ["azurerm_resource_group.adopResourceGroup"]
 }
 
 resource "azurerm_subnet" "adopSubnet" {
@@ -18,12 +19,14 @@ resource "azurerm_subnet" "adopSubnet" {
   resource_group_name  = "${azurerm_resource_group.adopResourceGroup.name}"
   virtual_network_name = "${azurerm_virtual_network.adopVirtualNetwork.name}"
   address_prefix       = "172.31.64.0/28"
+  depends_on           = ["azurerm_resource_group.adopResourceGroup", "azurerm_virtual_network.adopVirtualNetwork"]
 }
 
 resource "azurerm_network_security_group" "adopSecurityGroup" {
   name                = "adopSecurityGroup"
   location            = "${azurerm_resource_group.adopResourceGroup.location}"
   resource_group_name = "${azurerm_resource_group.adopResourceGroup.name}"
+  depends_on          = ["azurerm_resource_group.adopResourceGroup"]
 }
 
 resource "azurerm_network_security_rule" "allowSSH" {
@@ -38,6 +41,7 @@ resource "azurerm_network_security_rule" "allowSSH" {
   destination_address_prefix  = "*"
   resource_group_name         = "${azurerm_resource_group.adopResourceGroup.name}"
   network_security_group_name = "${azurerm_network_security_group.adopSecurityGroup.name}"
+  depends_on                  = ["azurerm_network_security_group.adopSecurityGroup"]
 }
 
 resource "azurerm_network_security_rule" "allowHTTP" {
@@ -52,6 +56,7 @@ resource "azurerm_network_security_rule" "allowHTTP" {
   destination_address_prefix  = "*"
   resource_group_name         = "${azurerm_resource_group.adopResourceGroup.name}"
   network_security_group_name = "${azurerm_network_security_group.adopSecurityGroup.name}"
+  depends_on                  = ["azurerm_network_security_group.adopSecurityGroup"]
 }
 
 resource "azurerm_network_security_rule" "allowHTTPS" {
@@ -66,6 +71,7 @@ resource "azurerm_network_security_rule" "allowHTTPS" {
   destination_address_prefix  = "*"
   resource_group_name         = "${azurerm_resource_group.adopResourceGroup.name}"
   network_security_group_name = "${azurerm_network_security_group.adopSecurityGroup.name}"
+  depends_on                  = ["azurerm_network_security_group.adopSecurityGroup"]
 }
 
 resource "azurerm_network_security_rule" "allowDockerTCP" {
@@ -80,6 +86,7 @@ resource "azurerm_network_security_rule" "allowDockerTCP" {
   destination_address_prefix  = "*"
   resource_group_name         = "${azurerm_resource_group.adopResourceGroup.name}"
   network_security_group_name = "${azurerm_network_security_group.adopSecurityGroup.name}"
+  depends_on                  = ["azurerm_network_security_group.adopSecurityGroup"]
 }
 
 resource "azurerm_network_security_rule" "allowDockerUDP" {
@@ -94,4 +101,11 @@ resource "azurerm_network_security_rule" "allowDockerUDP" {
   destination_address_prefix  = "*"
   resource_group_name         = "${azurerm_resource_group.adopResourceGroup.name}"
   network_security_group_name = "${azurerm_network_security_group.adopSecurityGroup.name}"
+  depends_on                  = ["azurerm_network_security_group.adopSecurityGroup"]
+}
+
+resource "azurerm_subnet_network_security_group_association" "adopSecGroupAssoc" {
+  subnet_id                 = "${azurerm_subnet.adopSubnet.id}"
+  network_security_group_id = "${azurerm_network_security_group.adopSecurityGroup.id}"
+  depends_on                = ["azurerm_subnet.adopSubnet", "azurerm_network_security_group.adopSecurityGroup"]
 }
