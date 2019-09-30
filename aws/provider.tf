@@ -1,7 +1,7 @@
 provider "aws" {
-  region = "eu-west-1"
+  region = "${var.aws_region}"
 
   # aws access/secret key
-  shared_credentials_file = "~/.aws/credentials"
-  profile                 = "terraform-workshop"
+  shared_credentials_file = "${var.aws_account_credentials_path}"
+  profile                 = "${var.aws_profile_name}"
 }

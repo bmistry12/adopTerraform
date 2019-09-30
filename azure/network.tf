@@ -1,14 +1,14 @@
 resource "azurerm_public_ip" "adopEIP" {
-  name                         = "adopEIP"
-  location                     = "West Europe"
-  resource_group_name          = "${azurerm_resource_group.adopResourceGroup.name}"
-  public_ip_address_allocation = "static"
-  depends_on                   = ["azurerm_resource_group.adopResourceGroup"]
+  name                = "adopEIP"
+  location            = "${var.EIP_location}"
+  resource_group_name = "${azurerm_resource_group.adopResourceGroup.name}"
+  allocation_method   = "Static"
+  depends_on          = ["azurerm_resource_group.adopResourceGroup"]
 }
 
 resource "azurerm_virtual_network" "adopVirtualNetwork" {
   name                = "adopVirtualNetwork"
-  address_space       = ["172.31.0.0/16"]
+  address_space       = "${var.virtual_network_cidr}"
   location            = "${azurerm_resource_group.adopResourceGroup.location}"
   resource_group_name = "${azurerm_resource_group.adopResourceGroup.name}"
   depends_on          = ["azurerm_resource_group.adopResourceGroup"]
@@ -18,7 +18,7 @@ resource "azurerm_subnet" "adopSubnet" {
   name                 = "adopSubnet"
   resource_group_name  = "${azurerm_resource_group.adopResourceGroup.name}"
   virtual_network_name = "${azurerm_virtual_network.adopVirtualNetwork.name}"
-  address_prefix       = "172.31.64.0/28"
+  address_prefix       = "${var.subnet_cidr}"
   depends_on           = ["azurerm_resource_group.adopResourceGroup", "azurerm_virtual_network.adopVirtualNetwork"]
 }
 

@@ -9,7 +9,7 @@ data "aws_iam_policy_document" "AssumeRolePolicyDocument" {
   }
 }
 resource "aws_iam_role" "adopIAMRole" {
-  name               = "adopIAMRole"
+  name               = "${var.iam_role_name}"
   path               = "/system/"
   assume_role_policy = "${data.aws_iam_policy_document.AssumeRolePolicyDocument.json}"
 }

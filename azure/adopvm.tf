@@ -8,7 +8,7 @@ resource "azurerm_network_interface" "adopNetworkInterface" {
     name                          = "adopIPConfig"
     subnet_id                     = "${azurerm_subnet.adopSubnet.id}"
     private_ip_address_allocation = "static"
-    private_ip_address            = "172.31.64.10"                    //in the cidr range but not subnet
+    private_ip_address            = "${var.private_ip}"                    //in the cidr range but not subnet
     public_ip_address_id          = "${azurerm_public_ip.adopEIP.id}"
   }
 
@@ -24,7 +24,6 @@ resource "azurerm_virtual_machine" "adopVirtualMachine" {
 
   # Deletes the OS disk automatically when deleting the VM
   delete_os_disk_on_termination = true
-
   # Deletes the data disks automatically when deleting the VM
   delete_data_disks_on_termination = true
 
@@ -66,7 +65,7 @@ resource "azurerm_virtual_machine" "adopVirtualMachine" {
     ServiceComponent = "ApplicationServer"
   }
 
-  depends_on = ["azurerm_resource_group.adopResourceGroup", "${azurerm_network_interface.adopNetworkInterface}"]
+  depends_on = ["azurerm_resource_group.adopResourceGroup", "azurerm_network_interface.adopNetworkInterface"]
 }
 
 /* resource "azurerm_managed_disk" "sda1" {

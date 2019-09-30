@@ -7,9 +7,3 @@
 
 # .tfvars files
 *.tfvars
-
-# secret files
-/aws/bhav_terraform_example.pem
-/aws/secretStuff
-/azure/bhav_terraform_example.pem
-/azure/secretStuff
